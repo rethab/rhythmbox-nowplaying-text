@@ -16,12 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
 
+# this is not the original version of this file.  output has been hacked up.
+# writes to fifo instead of file.
+
 import os
 import rb
 import rhythmdb
-import xml.dom.minidom
 
-class NowPlayingXMLPlugin (rb.Plugin):
+class NowPlayingTextPlugin (rb.Plugin):
   def __init__(self):
     rb.Plugin.__init__(self)
 
@@ -30,7 +32,11 @@ class NowPlayingXMLPlugin (rb.Plugin):
     self.shell = shell
     self.db = shell.props.db
     self.current_entry = None
-    self.output_file = "/tmp/nowplaying.xml"
+    self.output_file = os.path.expanduser('~') + "/.rhythmbox.out"
+
+    file = os.open(self.output_file, os.O_RDWR)
+    os.write(file, " \n") 
+    os.close(file)
 
     # Reference the shell player
     sp = shell.props.shell_player
@@ -64,9 +70,10 @@ class NowPlayingXMLPlugin (rb.Plugin):
     sp.disconnect(self.pc_id)
     sp.disconnect(self.pspc_id)
     
-    # Delete temp XML file
-    os.remove(self.output_file)
-    
+    file = os.open(self.output_file, os.O_RDWR)
+    os.write(file, " \n") 
+    os.close(file)
+
     # Remove references
     del self.db
     del self.shell
@@ -106,7 +113,8 @@ class NowPlayingXMLPlugin (rb.Plugin):
       "album":rhythmdb.PROP_ALBUM,
       "track-number":rhythmdb.PROP_TRACK_NUMBER,
       "duration":rhythmdb.PROP_DURATION,
-      "bitrate":rhythmdb.PROP_BITRATE
+      "bitrate":rhythmdb.PROP_BITRATE,
+	  "rating":rhythmdb.PROP_RATING
     }
 
     # Get song info from the current rhythmdb entry
@@ -115,29 +123,15 @@ class NowPlayingXMLPlugin (rb.Plugin):
       for k, v in properties.items()
     )
     
-    # Pass songinfo properties to XML write function
-    self.write_xml_from_songinfo(properties)
+    # Pass songinfo properties to text write function
+    self.write_from_songinfo(properties)
     
-  # Write songinfo to xml file
-  def write_xml_from_songinfo(self, properties):
-    # Create a new XML document  
-    impl = xml.dom.minidom.getDOMImplementation()
-    doc = impl.createDocument(None, "nowplaying", None)
+  # Write songinfo to text file
+  def write_from_songinfo(self, properties):
+    output = properties['artist'] + " - " + properties['title'] + " (" + `properties['rating']`.split('.')[0] + ")"
+    maxlength = 50
     
-    # Append "song" element
-    song = doc.createElement("song")
-    doc.documentElement.appendChild(song)
-    
-    # Loop through properties and append to doc
-    for k, v in properties.items():
-      property = doc.createElement(k)
-      property.appendChild(doc.createTextNode(str(v)))
-      song.appendChild(property)
-    
-    # Write XML to file
-    file = open(self.output_file, "w")
-    file.write(doc.toxml())
-    
-    # Close file and cleanup DOM
-    file.close()
-    doc.unlink()
+    # Write to file
+    file = os.open(self.output_file, os.O_RDWR)
+    os.write(file, output[0:maxlength]+"\n") 
+    os.close(file)
