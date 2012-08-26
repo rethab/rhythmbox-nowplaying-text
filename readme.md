@@ -6,9 +6,9 @@ Rhythmbox plugin that prints artist, song, and rating to a text file.  Forked fr
 
 First, open the terminal and issue the following commands:
 
-    mkdir -p ~/.gnome2/rhythmbox/plugins
-    cd ~/.gnome2/rhythmbox/plugins
-    git@github.com:sagotsky/rhythmbox-nowplaying-text.git
+    mkdir -p ~/.local/share/rhythmbox/plugins
+    cd ~/.local/share/rhythmbox/plugins
+    git clone git@github.com:rethab/rhythmbox-nowplaying-text.git
 
 Then enable the plugin within Rhythmbox by going to "Edit", selecting "Plugins"
 and then checking the "Now Playing Text" plugin.
