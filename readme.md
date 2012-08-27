@@ -26,4 +26,5 @@ And add %music% to your template
 However, this will display 'Updating..' unless you turn rhythmbox on.
 
 Therefore, I created a small extension for xmobar: PipeReader2. Check it out in my repo. Usage:
+
   , Run PipeReader2    "/home/sagotsky/.rhythmbox.out" "music" "No Music Playing"
