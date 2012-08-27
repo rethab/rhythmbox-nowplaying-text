@@ -24,6 +24,8 @@ from gi.repository import GObject, RB, Peas
 
 class NowPlayingTextPlugin (GObject.Object, Peas.Activatable):
 
+  MAXLEN = 50
+
   object = GObject.property(type=GObject.Object)
 
   def __init__(self):
@@ -122,17 +124,25 @@ class NowPlayingTextPlugin (GObject.Object, Peas.Activatable):
       (k, self.current_entry.get_string(v))
       for k, v in properties.items()
     )
+
+    # what media type? (a radio stream may use different
+    # fields to display information)
+    mtype = self.current_entry.get_string(RB.RhythmDBPropType.MEDIA_TYPE)
     
     # Pass songinfo properties to text write function
-    self.write_from_songinfo(properties)
+    self.write_from_songinfo(properties, mtype)
     
   # Write songinfo to text file
-  def write_from_songinfo(self, properties):
-    output = properties['artist'] + " - " + properties['title'] 
-    print output
-    maxlength = 50
-    
+  def write_from_songinfo(self, properties, mtype):
+    output = self.format_output(properties, mtype)
+
     # Write to file
     file = os.open(self.output_file, os.O_RDWR)
-    os.write(file, output[0:maxlength]+"\n") 
+    os.write(file, output[0:self.MAXLEN]+"\n") 
     os.close(file)
+
+  def format_output(self, properties, mtype):
+    if mtype == "application/octet-stream":
+      return properties['title'] + " (" + ".." + ")"
+    else:
+      return properties['artist'] + " - " + properties['title'] 
